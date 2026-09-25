@@ -1,0 +1,17 @@
+{
+  "_note": "Multiples are intentionally BLANK. Populate from a licensed transaction-data source (DealStats, BizBuySell Insight, Peercomps) or advisor experience, and record the source and review date. The UI shows the source note and last-reviewed date beside every valuation figure and blocks the valuation panel until multiples exist or an override is entered.",
+  "sectors": [
+    { "name": "Construction / Trades", "naicsPrefix": "23" },
+    { "name": "Professional Services", "naicsPrefix": "54" },
+    { "name": "Government Contracting", "naicsPrefix": null },
+    { "name": "Healthcare Services", "naicsPrefix": "62" },
+    { "name": "Manufacturing", "naicsPrefix": "31" },
+    { "name": "Distribution / Wholesale", "naicsPrefix": "42" },
+    { "name": "Retail", "naicsPrefix": "44" },
+    { "name": "Restaurants / Hospitality", "naicsPrefix": "72" },
+    { "name": "Transportation / Logistics", "naicsPrefix": "48" },
+    { "name": "IT / Software Services", "naicsPrefix": "51" },
+    { "name": "Other", "naicsPrefix": null }
+  ],
+  "defaultSourceNote": "SOURCE NEEDED — multiples not yet populated. Enter a licensed data source or advisor rationale before use."
+}

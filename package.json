@@ -1,0 +1,54 @@
+{
+  "name": "value-gap-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Value Gap Dashboard — readiness scoring and estimated value gap for business owners. Secure On Every Front / Plan For Your Goals, LLC. Estimates only; not an appraisal.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "db:studio": "drizzle-kit studio",
+    "hash-password": "tsx scripts/hash-password.ts",
+    "check:copy": "tsx scripts/check-copy.ts"
+  },
+  "dependencies": {
+    "@react-pdf/renderer": "^4.9.0",
+    "drizzle-orm": "^0.45.0",
+    "jose": "^6.0.0",
+    "next": "^15.5.0",
+    "pg": "^8.23.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "server-only": "^0.0.1",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^22.15.0",
+    "@types/pg": "^8.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.4.0",
+    "dotenv": "^16.5.0",
+    "drizzle-kit": "^0.31.0",
+    "eslint": "^9.25.0",
+    "eslint-config-next": "^15.5.0",
+    "pdfjs-dist": "^5.4.0",
+    "tailwindcss": "^4.1.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

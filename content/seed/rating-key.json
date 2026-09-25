@@ -1,0 +1,8 @@
+[
+  { "value": 1, "label": "Bad / Nonexistent", "description": "No consideration" },
+  { "value": 2, "label": "Needs Improvement", "description": "Thought about it" },
+  { "value": 3, "label": "Slightly Below Average", "description": "Some completed, but below average" },
+  { "value": 4, "label": "Slightly Above Average", "description": "Above average" },
+  { "value": 5, "label": "Best-in-Class", "description": "Best-in-class" },
+  { "value": 6, "label": "In a Class of One", "description": "Perfect, no further work needed" }
+]

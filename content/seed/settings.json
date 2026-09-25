@@ -1,0 +1,17 @@
+{
+  "disclosure": {
+    "text": "This tool produces an estimate based on self-reported or advisor-reported ratings and general industry multiple ranges. It is not a business appraisal, valuation opinion, or offer to purchase, and should not be relied upon for tax, legal, lending, or transaction purposes. Multiples shown are illustrative ranges; actual transaction values depend on many factors not captured here. Plan For Your Goals, LLC is a State of Florida Registered Investment Adviser. Secure On Every Front is a brand of Plan For Your Goals, LLC."
+  },
+  "brand": {
+    "firmName": "Plan For Your Goals, LLC",
+    "brandName": "Secure On Every Front",
+    "advisorTitle": "Fiduciary Advisor",
+    "reportTitle": "Value Gap Report",
+    "navy": "#0A1F33",
+    "orange": "#DA5B36"
+  },
+  "defaults": {
+    "earningsBasis": "EBITDA",
+    "sdeRevenueThreshold": null
+  }
+}
