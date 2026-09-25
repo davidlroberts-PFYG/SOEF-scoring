@@ -20,6 +20,7 @@ npm run db:generate      # drizzle-kit: generate a migration from src/db/schema.
 npm run db:migrate       # apply ./drizzle migrations to DATABASE_URL
 npm run db:seed          # idempotent seed from content/seed/*.json
 npm run db:setup         # migrate + seed
+npm run vercel-build     # what Vercel runs: migrate + seed + next build
 npm run hash-password -- 'pw'   # scrypt hash for ADMIN_PASSWORD_HASH
 ```
 

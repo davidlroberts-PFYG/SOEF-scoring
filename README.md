@@ -45,8 +45,8 @@ Local Postgres example: `createdb value_gap` then `DATABASE_URL=postgres://postg
 
 1. Create a Neon (or Vercel Postgres) database and copy the **pooled** connection string.
 2. Import this repo into Vercel. Set env vars: `DATABASE_URL`, `AUTH_SECRET` (`openssl rand -base64 32`), `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PASSWORD_HASH`.
-3. Run migrations and seed once from your machine against the production URL: `DATABASE_URL=... npm run db:setup`.
-4. Deploy. Smoke test with one fictional client.
+3. Deploy. The `vercel-build` script runs `db:migrate` and the idempotent `db:seed` before `next build`, so the production database is migrated and seeded automatically on every deploy (preview deploys share the same `DATABASE_URL` unless you scope one to preview).
+4. Smoke test with one fictional client.
 
 ## Project layout
 
