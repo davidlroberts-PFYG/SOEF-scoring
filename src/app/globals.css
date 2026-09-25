@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+
+/**
+ * Secure On Every Front tokens. Navy base, orange accent, Montserrat headings,
+ * Roboto body. Roles rather than raw colours so the palette can be retuned
+ * without touching components.
+ */
+@theme {
+  --color-navy: #0a1f33;
+  --color-navy-soft: #14304d;
+  --color-navy-ink: #0a1f33;
+  --color-ink: #1b2a3a;
+  --color-ink-soft: #4a5a6a;
+  --color-canvas: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-line: #d8dee5;
+  --color-orange: #da5b36;
+  --color-orange-hover: #bf4b29;
+  --color-orange-soft: #fbe9e2;
+  --color-ok: #2f6b4f;
+  --color-ok-soft: #e6f1ea;
+  --color-warn: #8a5a15;
+  --color-warn-soft: #f7ecd9;
+  --color-danger: #9b2c2c;
+  --color-danger-soft: #f8e4e4;
+
+  --font-heading: var(--font-montserrat), 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-roboto), 'Roboto', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Base styles live in the base layer so Tailwind utilities (text-white, etc.) can override them. */
+@layer base {
+  html {
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background: var(--color-canvas);
+  }
+
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    color: var(--color-navy);
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border border-line bg-surface p-5 shadow-sm;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-orange text-white hover:bg-orange-hover;
+  }
+  .btn-navy {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-navy text-white hover:bg-navy-soft;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-line bg-surface text-navy hover:bg-canvas;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-danger text-danger hover:bg-danger-soft;
+  }
+  .input {
+    @apply w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:border-navy focus:outline-none focus:ring-2 focus:ring-navy/20;
+  }
+  .label {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-soft;
+  }
+  .table {
+    @apply w-full border-collapse text-sm;
+  }
+  .table th {
+    @apply border-b border-line px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-ink-soft;
+  }
+  .table td {
+    @apply border-b border-line px-3 py-2 align-top;
+  }
+  .pill {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "_note": "Factor labels and hints are seed DATA, not code. They are adapted from Exit Planning Institute worksheets; before public or paid release, confirm permission with EPI or reword them here (or in Settings) in your own language. Weights default to 1.0 so totals match the paper worksheets (132 and 66).",
+  "scorecards": [
+    {
+      "key": "business",
+      "name": "Business Readiness",
+      "maxPerFactor": 6,
+      "factors": [
+        { "sortOrder": 1, "label": "Brand Issues", "hint": "Does the brand add value?" },
+        { "sortOrder": 2, "label": "Company Documentation", "hint": "Corp docs, legal, operating agreement, buy-sell" },
+        { "sortOrder": 3, "label": "Compliance Issues", "hint": "Taxes, environmental, regulatory, retirement" },
+        { "sortOrder": 4, "label": "Credibility and Justification", "hint": "Customers, awards, community" },
+        { "sortOrder": 5, "label": "Customer Contracts", "hint": "Customers & strategic alliances, warranties, maintenance" },
+        { "sortOrder": 6, "label": "Employee and Management Issues", "hint": "Reliance, competency, morale, P&P, turnover" },
+        { "sortOrder": 7, "label": "Expense Contracts", "hint": "Suppliers, leases, insurance, web, etc." },
+        { "sortOrder": 8, "label": "Expense Management", "hint": "SG&A, insurance, banking, cash, payroll, GM" },
+        { "sortOrder": 9, "label": "Financials", "hint": "Taxes, financial statements, customer analysis" },
+        { "sortOrder": 10, "label": "Immediate Value Readiness", "hint": "How ready right now for a strategic buyer?" },
+        { "sortOrder": 11, "label": "Intellectual Property", "hint": "Trademarks, patents, software, domains" },
+        { "sortOrder": 12, "label": "Government Grants", "hint": "R&D, federal, state, local" },
+        { "sortOrder": 13, "label": "Management Systems and Forecasts", "hint": "12 months – 3 years, scorecard" },
+        { "sortOrder": 14, "label": "Marketing Documentation and Systems", "hint": "Systematic, proof" },
+        { "sortOrder": 15, "label": "Payment Considerations", "hint": "Net proceeds, terms, exit options" },
+        { "sortOrder": 16, "label": "Personal Expectations", "hint": "Post-sale expectations & plan" },
+        { "sortOrder": 17, "label": "Personal Knowledge", "hint": "Understanding of how buyers place value" },
+        { "sortOrder": 18, "label": "Product and Marketing Strategies", "hint": "Ansoff matrix, products and markets analysis" },
+        { "sortOrder": 19, "label": "Revenue Drivers", "hint": "Sales & marketing, lead generation, conversion rate" },
+        { "sortOrder": 20, "label": "Shareholder Goals", "hint": "Shareholder alignment on when, how, who" },
+        { "sortOrder": 21, "label": "Systems, Processes and Databases", "hint": "CRM, accounting, customer, sales, fulfillment" },
+        { "sortOrder": 22, "label": "Valuation Expectations", "hint": "Valuation, transition timeframe, needs analysis" }
+      ]
+    },
+    {
+      "key": "personal",
+      "name": "Personal Readiness",
+      "maxPerFactor": 6,
+      "factors": [
+        { "sortOrder": 1, "label": "Written personal plan", "hint": "Interests outside the business; personal goals defined and written; integrated personal and financial plans" },
+        { "sortOrder": 2, "label": "Personal financial plan", "hint": "State of the owner's Personal Financial Plan" },
+        { "sortOrder": 3, "label": "Personal estate and tax plan", "hint": "Level of estate and tax planning completed" },
+        { "sortOrder": 4, "label": "Knowledge of net proceeds", "hint": "Understanding of net proceeds of each exit option" },
+        { "sortOrder": 5, "label": "Defined post-business income needs", "hint": "Level of awareness/planning of spending/income requirements" },
+        { "sortOrder": 6, "label": "Dependency on income from business", "hint": "Level of dependency on the business for income" },
+        { "sortOrder": 7, "label": "Knowledge of transition process", "hint": "How well do owner(s) understand the transition process" },
+        { "sortOrder": 8, "label": "Established advisory team", "hint": "Degree to which the transition team is defined and engaged" },
+        { "sortOrder": 9, "label": "Established/defined contingency plans", "hint": "Personal contingency plan, buy-sell, appropriate insurance" },
+        { "sortOrder": 10, "label": "Knowledge of ideal deal structure", "hint": "Knowledge of pros and cons of exit options and deal structures" },
+        { "sortOrder": 11, "label": "Family awareness of the plan/business", "hint": "Level of family discussions, meetings" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+[
+  { "band": 1, "label": "Poor or Non-Existent", "minPct": 0, "maxPct": 17 },
+  { "band": 2, "label": "Needs Improvement", "minPct": 18, "maxPct": 33 },
+  { "band": 3, "label": "Slightly Below Average", "minPct": 34, "maxPct": 50 },
+  { "band": 4, "label": "Slightly Above Average", "minPct": 51, "maxPct": 67 },
+  { "band": 5, "label": "Best-in-Class", "minPct": 68, "maxPct": 83 },
+  { "band": 6, "label": "Industry Leader (\"The Standard\")", "minPct": 84, "maxPct": 100 }
+]
