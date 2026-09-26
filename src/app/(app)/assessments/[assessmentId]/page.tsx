@@ -4,7 +4,8 @@ import { releaseAssessmentAction, reopenAssessmentAction } from '@/actions/asses
 import { requireSession } from '@/lib/auth';
 import { getAssessmentBundle } from '@/lib/data';
 import { formatCurrency, formatCurrencyExact, formatDate, formatMultiple, formatPct } from '@/lib/format';
-import { buildNarrative } from '@/engine';
+import { buildNarrative, rangeKindCaveat, topOfRangeLabel } from '@/engine';
+import { BenchmarkReference } from '@/components/BenchmarkReference';
 import { PageHeader } from '@/components/PageHeader';
 import { BandPill, StatusPill } from '@/components/Pill';
 import { Gauge } from '@/components/Gauge';
@@ -22,6 +23,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ asse
   const { business, personal, combined, valueGap: vg } = result;
   const narrative = buildNarrative(result, owner.companyName);
   const released = assessment.status === 'released';
+  const topLabel = topOfRangeLabel(vg.source.rangeKind);
+  const kindCaveat = rangeKindCaveat(vg.source.rangeKind);
 
   const businessRows = business.rows.map((row) => {
     const attr = vg.attribution.find((a) => a.factorId === row.factorId);
@@ -130,7 +133,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ asse
               </>
             ) : (
               <>
-                Sector: {vg.source.sectorName ?? '—'} · Source: {vg.source.sourceNote ?? 'not recorded'} · Last reviewed: {vg.source.lastReviewed ? formatDate(vg.source.lastReviewed) : '—'}
+                Sector: {vg.source.sectorName ?? '—'} ({vg.source.basis}) · Source:{' '}
+                {vg.source.sourceUrl ? (
+                  <a href={vg.source.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                    {vg.source.sourceNote ?? 'link'}
+                  </a>
+                ) : (
+                  vg.source.sourceNote ?? 'not recorded'
+                )}{' '}
+                · Last reviewed: {vg.source.lastReviewed ? formatDate(vg.source.lastReviewed) : '—'}
+                {kindCaveat ? ` · ${kindCaveat}` : ''}
               </>
             )}
           </p>
@@ -147,23 +159,39 @@ export default async function DashboardPage({ params }: { params: Promise<{ asse
                 Edit sector table
               </Link>
             </div>
+            <BenchmarkReference />
           </div>
         ) : (
           <>
             <div className="mt-3">
-              <RangeBar low={vg.lowMultiple} high={vg.highMultiple} current={vg.currentMultiple} position={vg.rangePosition} basis={vg.earningsBasis} />
+              <RangeBar low={vg.lowMultiple} high={vg.highMultiple} current={vg.currentMultiple} position={vg.rangePosition} basis={vg.effectiveBasis} median={vg.source.medianMultiple} topLabel={topLabel} />
             </div>
             {vg.status === 'no_earnings' ? (
               <div className="mt-3 rounded-md bg-warn-soft p-4 text-sm text-warn">
                 <p className="font-semibold">{vg.message}</p>
-                <p>Readiness scores and the multiple range are shown; dollar values are hidden until positive normalized {vg.earningsBasis} is entered.</p>
+                <p>Readiness scores and the multiple range are shown; dollar values are hidden until positive normalized {vg.effectiveBasis} is entered.</p>
+              </div>
+            ) : vg.status === 'basis_mismatch' ? (
+              <div className="mt-3 rounded-md bg-warn-soft p-4 text-sm text-warn">
+                <p className="font-semibold">
+                  Earnings were entered as {vg.earningsBasis}, but these multiples are {vg.effectiveBasis}.
+                </p>
+                <p>{vg.message}</p>
+                <div className="mt-2">
+                  <Link href={`/assessments/${assessment.id}/edit`} className="btn-ghost text-xs">
+                    Fix in Financials
+                  </Link>
+                </div>
               </div>
             ) : (
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <BigNumber label="Current estimated value" value={formatCurrency(vg.currentValue)} sub={`${formatCurrencyExact(vg.earnings)} ${vg.earningsBasis} × ${formatMultiple(vg.currentMultiple)}`} />
-                <BigNumber label="Best-in-class value" value={formatCurrency(vg.bestInClassValue)} sub={`${formatCurrencyExact(vg.earnings)} ${vg.earningsBasis} × ${formatMultiple(vg.bestInClassMultiple)}`} />
-                <BigNumber label="Estimated value gap" value={formatCurrency(vg.valueGap)} sub="Best-in-class minus current" accent />
-              </div>
+              <>
+                {vg.earningsDerivation ? <p className="mt-3 text-xs text-ink-soft">{vg.earningsDerivation}</p> : null}
+                <div className="mt-4 grid gap-4 sm:grid-cols-3">
+                  <BigNumber label="Current estimated value" value={formatCurrency(vg.currentValue)} sub={`${formatCurrencyExact(vg.effectiveEarnings)} ${vg.effectiveBasis} × ${formatMultiple(vg.currentMultiple)}`} />
+                  <BigNumber label={`${topLabel} value`} value={formatCurrency(vg.bestInClassValue)} sub={`${formatCurrencyExact(vg.effectiveEarnings)} ${vg.effectiveBasis} × ${formatMultiple(vg.bestInClassMultiple)}`} />
+                  <BigNumber label="Estimated value gap" value={formatCurrency(vg.valueGap)} sub={`${topLabel} minus current`} accent />
+                </div>
+              </>
             )}
             {result.assessment.ownerValueEstimate !== null && vg.currentValue !== null ? (
               <p className="mt-3 text-xs text-ink-soft">

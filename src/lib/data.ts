@@ -83,8 +83,12 @@ export function toSectorView(s: typeof sectors.$inferSelect) {
     naicsPrefix: s.naicsPrefix,
     lowMultiple: toNumber(s.lowMultiple),
     highMultiple: toNumber(s.highMultiple),
+    medianMultiple: toNumber(s.medianMultiple),
     basis: s.basis,
+    rangeKind: s.rangeKind,
     sourceNote: s.sourceNote,
+    sourceUrl: s.sourceUrl,
+    methodNote: s.methodNote,
     lastReviewed: s.lastReviewed,
     sortOrder: s.sortOrder,
     active: s.active,
@@ -99,8 +103,12 @@ export function toSectorInput(s: SectorView | null): SectorInput | null {
     name: s.name,
     lowMultiple: s.lowMultiple,
     highMultiple: s.highMultiple,
+    medianMultiple: s.medianMultiple,
     basis: s.basis,
+    rangeKind: s.rangeKind,
     sourceNote: s.sourceNote,
+    sourceUrl: s.sourceUrl,
+    methodNote: s.methodNote,
     lastReviewed: s.lastReviewed,
   };
 }
@@ -115,9 +123,11 @@ export function toAssessmentInput(a: AssessmentRow): AssessmentInput {
     revenueTtm: toNumber(a.revenueTtm),
     earnings: toNumber(a.earnings),
     earningsBasis: a.earningsBasis,
+    ownerCompAddback: toNumber(a.ownerCompAddback),
     ownerValueEstimate: toNumber(a.ownerValueEstimate),
     overrideLowMultiple: toNumber(a.overrideLowMultiple),
     overrideHighMultiple: toNumber(a.overrideHighMultiple),
+    overrideBasis: a.overrideBasis,
     overrideNote: a.overrideNote,
   };
 }

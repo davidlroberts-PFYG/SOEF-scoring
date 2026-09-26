@@ -7,6 +7,30 @@ import bandsSeed from '../../content/seed/bands.json';
 import sectorsSeed from '../../content/seed/sectors.json';
 import settingsSeed from '../../content/seed/settings.json';
 
+type SectorSeedRow = (typeof sectorsSeed.sectors)[number];
+
+/** A sector row is "blank" when both multiples are null; only blank rows accept seed values. */
+export function shouldFillSector(row: { lowMultiple: string | null; highMultiple: string | null }): boolean {
+  return row.lowMultiple === null && row.highMultiple === null;
+}
+
+export function sectorSeedValues(s: SectorSeedRow) {
+  const num = (v: number | null | undefined) => (v === null || v === undefined ? null : String(v));
+  return {
+    name: s.name,
+    naicsPrefix: s.naicsPrefix ?? null,
+    lowMultiple: num(s.lowMultiple),
+    highMultiple: num(s.highMultiple),
+    medianMultiple: num(s.medianMultiple),
+    basis: (s.basis === 'SDE' ? 'SDE' : 'EBITDA') as 'EBITDA' | 'SDE',
+    rangeKind: (s.rangeKind === 'quartile_range' ? 'quartile_range' : 'median_range') as 'median_range' | 'quartile_range',
+    sourceNote: s.sourceNote ?? sectorsSeed.defaultSourceNote,
+    sourceUrl: s.sourceUrl ?? null,
+    methodNote: s.methodNote ?? null,
+    lastReviewed: s.lastReviewed ?? null,
+  };
+}
+
 /**
  * Idempotent seed. Config lives in tables, not code constants; this loads the
  * JSON under content/seed the first time and fills in anything missing on
@@ -55,24 +79,25 @@ export async function seedDatabase(db: Db, log: (msg: string) => void = () => {}
   }
   log(`bands: ${bandsSeed.length}`);
 
-  let order = 0;
+  const existingSectors = await db.select().from(sectors);
+  const byName = new Map(existingSectors.map((s) => [s.name, s]));
+  let order = existingSectors.reduce((m, s) => Math.max(m, s.sortOrder), 0);
+  let inserted = 0;
+  let filled = 0;
   for (const s of sectorsSeed.sectors) {
-    order += 10;
-    await db
-      .insert(sectors)
-      .values({
-        name: s.name,
-        naicsPrefix: s.naicsPrefix,
-        lowMultiple: null,
-        highMultiple: null,
-        basis: 'EBITDA',
-        sourceNote: sectorsSeed.defaultSourceNote,
-        lastReviewed: null,
-        sortOrder: order,
-      })
-      .onConflictDoNothing({ target: sectors.name });
+    const values = sectorSeedValues(s);
+    const current = byName.get(s.name);
+    if (!current) {
+      order += 10;
+      await db.insert(sectors).values({ ...values, sortOrder: order });
+      inserted += 1;
+    } else if (shouldFillSector(current) && values.lowMultiple !== null && values.highMultiple !== null) {
+      // Fill-blank semantics: rows the advisor has already populated are never touched.
+      await db.update(sectors).set({ ...values, updatedAt: new Date() }).where(eq(sectors.id, current.id));
+      filled += 1;
+    }
   }
-  log(`sectors: ${sectorsSeed.sectors.length} (multiples blank — SOURCE NEEDED)`);
+  log(`sectors: ${inserted} inserted, ${filled} filled from seed, ${sectorsSeed.sectors.length - inserted - filled} left as-is`);
 
   for (const [key, value] of Object.entries(settingsSeed)) {
     await db

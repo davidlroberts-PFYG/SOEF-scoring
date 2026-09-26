@@ -7,6 +7,7 @@ import type {
   FactorDef,
   FactorRatingInput,
   MultipleSource,
+  RangeKind,
   RatingKeyEntry,
   ScorecardResult,
   ValueGapResult,
@@ -23,8 +24,12 @@ export interface SectorInput {
   name: string;
   lowMultiple: number | null;
   highMultiple: number | null;
+  medianMultiple?: number | null;
   basis: EarningsBasis;
+  rangeKind?: RangeKind;
   sourceNote: string | null;
+  sourceUrl?: string | null;
+  methodNote?: string | null;
   lastReviewed: string | null;
 }
 
@@ -34,9 +39,13 @@ export interface AssessmentInput {
   revenueTtm: number | null;
   earnings: number | null;
   earningsBasis: EarningsBasis;
+  /** SDE − EBITDA, used to bridge the entered basis to the multiples' basis. */
+  ownerCompAddback?: number | null;
   ownerValueEstimate: number | null;
   overrideLowMultiple: number | null;
   overrideHighMultiple: number | null;
+  /** Basis of the override multiples; null = same as `earningsBasis`. */
+  overrideBasis?: EarningsBasis | null;
   overrideNote: string | null;
 }
 
@@ -78,7 +87,13 @@ export function resolveMultiples(
       source: {
         kind: 'override',
         sectorName: sector?.name ?? null,
+        basis: assessment.overrideBasis ?? assessment.earningsBasis,
+        // An advisor-entered range is taken at face value as the best-in-class ceiling.
+        rangeKind: 'quartile_range',
+        medianMultiple: null,
         sourceNote: null,
+        sourceUrl: null,
+        methodNote: null,
         lastReviewed: null,
         overrideNote: assessment.overrideNote,
       },
@@ -90,7 +105,12 @@ export function resolveMultiples(
     source: {
       kind: 'sector',
       sectorName: sector?.name ?? null,
+      basis: sector?.basis ?? assessment.earningsBasis,
+      rangeKind: sector?.rangeKind ?? 'median_range',
+      medianMultiple: sector?.medianMultiple ?? null,
       sourceNote: sector?.sourceNote ?? null,
+      sourceUrl: sector?.sourceUrl ?? null,
+      methodNote: sector?.methodNote ?? null,
       lastReviewed: sector?.lastReviewed ?? null,
       overrideNote: null,
     },
@@ -134,6 +154,7 @@ export function buildAssessmentResult(input: BuildResultInput, now = new Date())
   const valueGap = computeValueGap({
     earnings: input.assessment.earnings,
     earningsBasis: input.assessment.earningsBasis,
+    ownerCompAddback: input.assessment.ownerCompAddback ?? null,
     lowMultiple: low,
     highMultiple: high,
     businessReadinessPct: business.readinessPct,

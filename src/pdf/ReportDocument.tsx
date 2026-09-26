@@ -1,5 +1,6 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import type { AssessmentResult, Narrative } from '@/engine';
+import { rangeKindCaveat, topOfRangeLabel } from '@/engine/labels';
 import { formatCurrency, formatCurrencyExact, formatDate, formatMultiple, formatPct } from '@/lib/format';
 
 export interface ReportProps {
@@ -53,6 +54,8 @@ export function ReportDocument(props: ReportProps) {
   const { result, narrative, companyName, ownerName, advisorName, disclosure, brand, generatedAt } = props;
   const s = makeStyles(brand.navy, brand.orange);
   const { business, personal, combined, valueGap: vg } = result;
+  const topLabel = topOfRangeLabel(vg.source.rangeKind);
+  const kindCaveat = rangeKindCaveat(vg.source.rangeKind);
 
   const Footer = () => (
     <View style={s.footer} fixed>
@@ -86,7 +89,7 @@ export function ReportDocument(props: ReportProps) {
   const sourceLine =
     vg.source.kind === 'override'
       ? `Custom multiple range entered for this assessment${vg.source.overrideNote ? `: ${vg.source.overrideNote}` : ''}.`
-      : `Sector: ${vg.source.sectorName ?? '—'}. Multiple source: ${vg.source.sourceNote ?? 'not recorded'}. Last reviewed: ${vg.source.lastReviewed ? formatDate(vg.source.lastReviewed) : '—'}.`;
+      : `Sector: ${vg.source.sectorName ?? '—'} (${vg.source.basis} multiples). Source: ${vg.source.sourceNote ?? 'not recorded'}${vg.source.sourceUrl ? ` (${vg.source.sourceUrl})` : ''}. Last reviewed: ${vg.source.lastReviewed ? formatDate(vg.source.lastReviewed) : '—'}.${kindCaveat ? ` ${kindCaveat}` : ''}`;
 
   return (
     <Document title={`${brand.reportTitle} — ${companyName}`} author={brand.firmName} subject="Readiness scores and estimated value gap (estimate only)">
@@ -109,9 +112,12 @@ export function ReportDocument(props: ReportProps) {
             <View style={s.rangeLabels}>
               <Text style={s.small}>Low {formatMultiple(vg.lowMultiple)}</Text>
               <Text style={[s.small, { color: brand.orange, fontFamily: 'Helvetica-Bold' }]}>
-                Current position {formatMultiple(vg.currentMultiple)} {vg.earningsBasis}
+                Current position {formatMultiple(vg.currentMultiple)} {vg.effectiveBasis}
               </Text>
-              <Text style={s.small}>Best-in-class {formatMultiple(vg.highMultiple)}</Text>
+              <Text style={s.small}>
+                {vg.source.medianMultiple ? `Median ${formatMultiple(vg.source.medianMultiple)} · ` : ''}
+                {topLabel} {formatMultiple(vg.highMultiple)}
+              </Text>
             </View>
           </View>
         ) : (
@@ -119,28 +125,31 @@ export function ReportDocument(props: ReportProps) {
         )}
 
         {vg.status === 'ok' ? (
-          <View style={[s.row, { marginTop: 8 }]}>
-            <View style={s.box}>
-              <Text style={s.boxLabel}>Current estimated value</Text>
-              <Text style={s.boxValue}>{formatCurrency(vg.currentValue)}</Text>
-              <Text style={s.boxSub}>
-                {formatCurrencyExact(vg.earnings)} {vg.earningsBasis} × {formatMultiple(vg.currentMultiple)}
-              </Text>
+          <>
+            {vg.earningsDerivation ? <Text style={[s.small, { marginTop: 4 }]}>{vg.earningsDerivation}</Text> : null}
+            <View style={[s.row, { marginTop: 8 }]}>
+              <View style={s.box}>
+                <Text style={s.boxLabel}>Current estimated value</Text>
+                <Text style={s.boxValue}>{formatCurrency(vg.currentValue)}</Text>
+                <Text style={s.boxSub}>
+                  {formatCurrencyExact(vg.effectiveEarnings)} {vg.effectiveBasis} × {formatMultiple(vg.currentMultiple)}
+                </Text>
+              </View>
+              <View style={s.box}>
+                <Text style={s.boxLabel}>{topLabel} value</Text>
+                <Text style={s.boxValue}>{formatCurrency(vg.bestInClassValue)}</Text>
+                <Text style={s.boxSub}>
+                  {formatCurrencyExact(vg.effectiveEarnings)} {vg.effectiveBasis} × {formatMultiple(vg.bestInClassMultiple)}
+                </Text>
+              </View>
+              <View style={s.boxAccent}>
+                <Text style={s.boxLabelLight}>Estimated value gap</Text>
+                <Text style={s.boxValueLight}>{formatCurrency(vg.valueGap)}</Text>
+                <Text style={s.boxSubLight}>{topLabel} minus current</Text>
+              </View>
             </View>
-            <View style={s.box}>
-              <Text style={s.boxLabel}>Best-in-class value</Text>
-              <Text style={s.boxValue}>{formatCurrency(vg.bestInClassValue)}</Text>
-              <Text style={s.boxSub}>
-                {formatCurrencyExact(vg.earnings)} {vg.earningsBasis} × {formatMultiple(vg.bestInClassMultiple)}
-              </Text>
-            </View>
-            <View style={s.boxAccent}>
-              <Text style={s.boxLabelLight}>Estimated value gap</Text>
-              <Text style={s.boxValueLight}>{formatCurrency(vg.valueGap)}</Text>
-              <Text style={s.boxSubLight}>Best-in-class minus current</Text>
-            </View>
-          </View>
-        ) : vg.status === 'no_earnings' ? (
+          </>
+        ) : vg.status === 'no_earnings' || vg.status === 'basis_mismatch' ? (
           <Text style={s.warn}>{vg.message}</Text>
         ) : null}
         <Text style={[s.small, { marginTop: 6 }]}>{sourceLine}</Text>

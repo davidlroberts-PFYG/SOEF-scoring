@@ -29,7 +29,11 @@ const sectorSchema = z
     lowMultiple: multiple,
     highMultiple: multiple,
     basis: z.enum(['EBITDA', 'SDE']),
+    medianMultiple: multiple,
+    rangeKind: z.enum(['median_range', 'quartile_range']),
     sourceNote: z.string().trim().max(2000).nullable(),
+    sourceUrl: z.string().trim().url().max(500).or(z.literal('')).nullable(),
+    methodNote: z.string().trim().max(4000).nullable(),
     lastReviewed: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
     active: z.boolean(),
   })
@@ -38,6 +42,9 @@ const sectorSchema = z
     const both = v.lowMultiple !== null && v.highMultiple !== null;
     if (one && !both) ctx.addIssue({ code: 'custom', message: 'Enter both a low and a high multiple, or neither.' });
     if (both && v.highMultiple! < v.lowMultiple!) ctx.addIssue({ code: 'custom', message: 'High multiple must be ≥ low multiple.' });
+    if (both && v.medianMultiple !== null && (v.medianMultiple < v.lowMultiple! || v.medianMultiple > v.highMultiple!)) {
+      ctx.addIssue({ code: 'custom', message: 'Median multiple must fall between low and high.' });
+    }
     if (both && !v.sourceNote) ctx.addIssue({ code: 'custom', message: 'A source note is required when multiples are populated.' });
   });
 
@@ -54,7 +61,11 @@ export async function saveSectorAction(id: string | null, input: SectorInputData
     lowMultiple: d.lowMultiple === null ? null : String(d.lowMultiple),
     highMultiple: d.highMultiple === null ? null : String(d.highMultiple),
     basis: d.basis,
+    medianMultiple: d.medianMultiple === null ? null : String(d.medianMultiple),
+    rangeKind: d.rangeKind,
     sourceNote: d.sourceNote || null,
+    sourceUrl: d.sourceUrl || null,
+    methodNote: d.methodNote || null,
     lastReviewed: d.lastReviewed,
     active: d.active,
     updatedAt: new Date(),
