@@ -1,5 +1,5 @@
 {
-  "_note": "Sector benchmark seed. Low/high are the min and max of the BizBuySell sub-industry SDE multiples listed in methodNote (see content/benchmarks/README.md for method, exclusions, and unverified reuse terms). The seed only fills rows whose multiples are blank; edits made in Settings are never overwritten. Government Contracting is intentionally blank: no Main Street source exists.",
+  "_note": "Sector benchmark seed. Low/high are the min and max of the BizBuySell sub-industry SDE multiples listed in methodNote (see content/benchmarks/README.md for method, exclusions, and unverified reuse terms). The seed only fills rows whose multiples are blank; edits made in Settings are never overwritten. Government Contracting has no Main Street transaction source; its row uses sbLiftOff advisor-stated EBITDA tiers (see README) and is flagged quartile_range because the tiers are practitioner ranges, not sub-industry medians.",
   "sectors": [
     {
       "name": "Construction / Trades",
@@ -30,14 +30,14 @@
     {
       "name": "Government Contracting",
       "naicsPrefix": null,
-      "lowMultiple": null,
-      "highMultiple": null,
+      "lowMultiple": 3.0,
+      "highMultiple": 7.0,
       "medianMultiple": null,
       "basis": "EBITDA",
-      "rangeKind": null,
-      "sourceNote": "SOURCE NEEDED. NO Main Street source. BizBuySell has no GovCon category. Fallback: IBBA Market Pulse Q2 2026 lower-middle-market medians 3.9x EBITDA ($2–5M) / 5.8x EBITDA ($5–50M), all industries. GovCon/Defense was a top buyer-interest sector in Q2 2026 (IBBA). Consider GF Data or DealStats NAICS 5416/5413 for real comps.",
-      "sourceUrl": null,
-      "methodNote": null,
+      "rangeKind": "quartile_range",
+      "sourceNote": "sbLiftOff, 'Knowing Your Company's Value is a Key to Growth – And Exit!' (Oct 2022, EBITDA). Advisor-stated ranges for small set-aside government contractors: 3–5× set-aside designations with no full-and-open work, 5–7× some full-and-open, 5–9×+ all full-and-open. Table uses 3.0–7.0×; override upward for mostly full-and-open firms. Not a licensed transaction database; figures taken from search-result snippets and not yet confirmed against the live page.",
+      "sourceUrl": "https://sbliftoff.com/news/knowing-your-companys-value-is-a-key-to-growth-and-exit/",
+      "methodNote": "Low = bottom of the set-aside-only tier (3×). High = top of the middle tier (7×), chosen over the 9×+ full-and-open ceiling as the conservative default for $1M–$5M EBITDA firms. Set-aside dependence is the dominant value driver here and is not captured by the scorecard: SBA recertification rules effective 2026-01-17 can make an acquired small business ineligible for set-aside option years. Use the assessment override with a note for set-aside-heavy clients. Larger-deal sources (Capstone Partners 2026 A&D avg 9.5–11.4× EV/EBITDA; Chesapeake Corporate Advisors Q1 2026 public Government Services 11.5×) describe $5M+ EBITDA or public companies and were rejected for this size band.",
       "lastReviewed": "2026-09-26"
     },
     {
