@@ -83,12 +83,26 @@ export type ValuationStatus =
   | 'ok'
   | 'no_earnings'
   | 'no_multiples'
-  | 'invalid_multiples';
+  | 'invalid_multiples'
+  | 'basis_mismatch';
+
+/**
+ * Whether the high multiple is a top-quartile figure ('quartile_range') or
+ * only the top of a range of medians ('median_range'). Drives the label used
+ * for the top of the range: "Best-in-class" vs "Top of sector range".
+ */
+export type RangeKind = 'median_range' | 'quartile_range';
 
 export interface MultipleSource {
   kind: 'sector' | 'override';
   sectorName: string | null;
+  /** Basis the multiples are expressed in. Must match the earnings they are applied to. */
+  basis: EarningsBasis;
+  rangeKind: RangeKind;
+  medianMultiple: number | null;
   sourceNote: string | null;
+  sourceUrl: string | null;
+  methodNote: string | null;
   lastReviewed: string | null;
   overrideNote: string | null;
 }
@@ -109,8 +123,16 @@ export interface FactorAttribution {
 export interface ValueGapResult {
   status: ValuationStatus;
   message: string | null;
+  /** Earnings as entered on the assessment, in `earningsBasis`. */
   earnings: number | null;
   earningsBasis: EarningsBasis;
+  /** Owner compensation add-back (SDE − EBITDA) used to bridge bases, if any. */
+  ownerCompAddback: number | null;
+  /** Earnings actually multiplied, expressed in the multiples' basis. */
+  effectiveEarnings: number | null;
+  effectiveBasis: EarningsBasis;
+  /** Plain-English derivation when the basis was bridged, e.g. "$400,000 EBITDA + $150,000 owner comp = $550,000 SDE". */
+  earningsDerivation: string | null;
   lowMultiple: number | null;
   highMultiple: number | null;
   /** Interpolated multiple at the business readiness percentage. */

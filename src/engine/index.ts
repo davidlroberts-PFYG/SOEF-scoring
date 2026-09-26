@@ -4,3 +4,4 @@ export * from './rounding';
 export * from './valueGap';
 export * from './buildResult';
 export * from './narrative';
+export * from './labels';

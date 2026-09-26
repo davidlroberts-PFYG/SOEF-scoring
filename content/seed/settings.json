@@ -11,7 +11,7 @@
     "orange": "#DA5B36"
   },
   "defaults": {
-    "earningsBasis": "EBITDA",
+    "earningsBasis": "SDE",
     "sdeRevenueThreshold": null
   }
 }

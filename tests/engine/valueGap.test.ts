@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BASIS_MISMATCH_MESSAGE,
   INVALID_MULTIPLES_MESSAGE,
+  bridgeEarnings,
+  buildNarrative,
+  rangeKindCaveat,
+  topOfRangeLabel,
   NO_EARNINGS_MESSAGE,
   NO_MULTIPLES_MESSAGE,
   buildAssessmentResult,
@@ -15,10 +20,16 @@ import { bands, businessFactors, factors, rateAll, ratingKey, scorecards } from 
 const source: MultipleSource = {
   kind: 'sector',
   sectorName: 'Test Sector',
+  basis: 'EBITDA',
+  rangeKind: 'quartile_range',
+  medianMultiple: null,
   sourceNote: 'test',
+  sourceUrl: null,
+  methodNote: null,
   lastReviewed: '2026-01-01',
   overrideNote: null,
 };
+const sdeSource: MultipleSource = { ...source, basis: 'SDE', rangeKind: 'median_range', medianMultiple: 3.04 };
 
 function businessRows(ratings: { factorId: string; rating: number | null }[]) {
   return scoreScorecard({ key: 'business', name: 'B', factors, ratings, bands }).rows;
@@ -62,7 +73,7 @@ describe('value gap engine', () => {
       highMultiple: 4.25,
       businessReadinessPct: pct,
       businessRows: rows,
-      source,
+      source: sdeSource,
     });
     const sum = r.attribution.reduce((s, a) => s + (a.gapAttributed ?? 0), 0);
     expect(sum).toBeCloseTo(r.valueGap!, 6);
@@ -181,6 +192,135 @@ describe('value gap engine', () => {
   });
 });
 
+
+describe('earnings basis guard', () => {
+  const rows = businessRows(rateAll(businessFactors, 3));
+
+  it('blocks the valuation when EBITDA is entered against SDE multiples and no add-back is given', () => {
+    const r = computeValueGap({
+      earnings: 400_000,
+      earningsBasis: 'EBITDA',
+      lowMultiple: 2.59,
+      highMultiple: 4.24,
+      businessReadinessPct: 0.5,
+      businessRows: rows,
+      source: sdeSource,
+    });
+    expect(r.status).toBe('basis_mismatch');
+    expect(r.message).toBe(BASIS_MISMATCH_MESSAGE);
+    expect(r.currentValue).toBeNull();
+    expect(r.valueGap).toBeNull();
+    // Multiples are still shown so the advisor sees the range.
+    expect(r.currentMultiple).toBeCloseTo(3.415, 6);
+    expect(r.effectiveBasis).toBe('SDE');
+  });
+
+  it('bridges EBITDA to SDE with the owner compensation add-back and explains the derivation', () => {
+    const r = computeValueGap({
+      earnings: 400_000,
+      earningsBasis: 'EBITDA',
+      ownerCompAddback: 150_000,
+      lowMultiple: 2.59,
+      highMultiple: 4.24,
+      businessReadinessPct: 0.5,
+      businessRows: rows,
+      source: sdeSource,
+    });
+    expect(r.status).toBe('ok');
+    expect(r.effectiveEarnings).toBe(550_000);
+    expect(r.earningsDerivation).toBe('$400,000 EBITDA + $150,000 owner comp = $550,000 SDE');
+    expect(r.currentValue).toBeCloseTo(550_000 * 3.415, 6);
+  });
+
+  it('bridges SDE to EBITDA the other way, and blocks if the result is not positive', () => {
+    const ok = bridgeEarnings(550_000, 'SDE', 'EBITDA', 150_000);
+    expect(ok?.value).toBe(400_000);
+    expect(ok?.derivation).toContain('= $400,000 EBITDA');
+    const r = computeValueGap({
+      earnings: 100_000,
+      earningsBasis: 'SDE',
+      ownerCompAddback: 150_000,
+      lowMultiple: 3,
+      highMultiple: 6,
+      businessReadinessPct: 0.5,
+      businessRows: rows,
+      source,
+    });
+    expect(r.status).toBe('no_earnings');
+    expect(r.valueGap).toBeNull();
+  });
+
+  it('matching bases need no add-back and ignore one if present', () => {
+    const r = computeValueGap({
+      earnings: 300_000,
+      earningsBasis: 'SDE',
+      ownerCompAddback: 999_999,
+      lowMultiple: 2.59,
+      highMultiple: 4.24,
+      businessReadinessPct: 0.5,
+      businessRows: rows,
+      source: sdeSource,
+    });
+    expect(r.status).toBe('ok');
+    expect(r.effectiveEarnings).toBe(300_000);
+    expect(r.earningsDerivation).toBeNull();
+  });
+
+  it('worked case: Manufacturing 2.59×–4.24× SDE, SDE $300,000, 50% → 3.415×, $1,024,500, $1,272,000, gap $247,500', () => {
+    const ratings = businessFactors.map((f, i) => ({ factorId: f.id, rating: i < 11 ? 5 : 1 }));
+    const r = computeValueGap({
+      earnings: 300_000,
+      earningsBasis: 'SDE',
+      lowMultiple: 2.59,
+      highMultiple: 4.24,
+      businessReadinessPct: 0.5,
+      businessRows: businessRows(ratings),
+      source: sdeSource,
+    });
+    expect(r.currentMultiple).toBeCloseTo(3.415, 10);
+    expect(r.currentValue).toBeCloseTo(1_024_500, 6);
+    expect(r.bestInClassValue).toBeCloseTo(1_272_000, 6);
+    expect(r.valueGap).toBeCloseTo(247_500, 6);
+  });
+});
+
+describe('range kind labels', () => {
+  it('names the top of a median range honestly', () => {
+    expect(topOfRangeLabel('median_range')).toBe('Top of sector range');
+    expect(topOfRangeLabel('quartile_range')).toBe('Best-in-class');
+    expect(rangeKindCaveat('median_range')).toMatch(/medians/);
+    expect(rangeKindCaveat('quartile_range')).toBeNull();
+  });
+
+  it('the narrative avoids "best-in-class" for a median range and states the derivation', () => {
+    const res = buildAssessmentResult({
+      assessment: {
+        assessedAt: '2026-09-01',
+        status: 'draft',
+        revenueTtm: null,
+        earnings: 400_000,
+        earningsBasis: 'EBITDA',
+        ownerCompAddback: 150_000,
+        ownerValueEstimate: null,
+        overrideLowMultiple: null,
+        overrideHighMultiple: null,
+        overrideNote: null,
+      },
+      sector: { id: 's', name: 'Manufacturing', lowMultiple: 2.59, highMultiple: 4.24, medianMultiple: 3.04, basis: 'SDE', rangeKind: 'median_range', sourceNote: 'BizBuySell', lastReviewed: '2026-09-26' },
+      scorecards,
+      factors,
+      ratings: rateAll(businessFactors, 4),
+      bands,
+      ratingKey,
+    });
+    const text = buildNarrative(res, 'Acme').paragraphs.join(' ');
+    expect(text).toContain('$400,000 EBITDA + $150,000 owner comp = $550,000 SDE');
+    expect(text).toContain('top of the sector range');
+    expect(text).not.toMatch(/best-in-class company/i);
+    expect(text).toContain('sub-industry medians');
+  });
+});
+
 describe('display rounding', () => {
   it('rounds to nearest $1,000 below $1M and nearest $10,000 at or above $1M', () => {
     expect(roundDisplayValue(2_250_000)).toBe(2_250_000);
@@ -250,9 +390,25 @@ describe('buildAssessmentResult', () => {
       ratingKey,
     });
     expect(res.valueGap.source.kind).toBe('override');
+    expect(res.valueGap.source.basis).toBe('EBITDA');
+    expect(res.valueGap.source.rangeKind).toBe('quartile_range');
     expect(res.valueGap.source.overrideNote).toMatch(/premium/);
     expect(res.valueGap.bestInClassValue).toBeCloseTo(4_000_000, 6);
     expect(res.valueGap.valueGap).toBeCloseTo(0, 6);
+  });
+
+  it('an override can carry its own basis, which then governs the mismatch check', () => {
+    const res = buildAssessmentResult({
+      assessment: { ...assessment, earningsBasis: 'EBITDA', overrideLowMultiple: 2, overrideHighMultiple: 3, overrideBasis: 'SDE', overrideNote: 'SDE comps' },
+      sector,
+      scorecards,
+      factors,
+      ratings: rateAll(businessFactors, 4),
+      bands,
+      ratingKey,
+    });
+    expect(res.valueGap.source.basis).toBe('SDE');
+    expect(res.valueGap.status).toBe('basis_mismatch');
   });
 
   it('personal readiness never changes the valuation', () => {

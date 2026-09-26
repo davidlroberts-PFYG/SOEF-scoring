@@ -10,18 +10,24 @@ export function RangeBar({
   current,
   position,
   basis,
+  median,
+  topLabel = 'Best-in-class',
 }: {
   low: number | null;
   high: number | null;
   current: number | null;
   position: number | null;
   basis: string;
+  median?: number | null;
+  topLabel?: string;
 }) {
   if (low === null || high === null) {
     return <p className="text-sm text-ink-soft">No multiple range available.</p>;
   }
   const pos = position === null ? 0 : Math.min(1, Math.max(0, position));
   const x = 40 + pos * 520;
+  const medianPos = median !== null && median !== undefined && high > low ? Math.min(1, Math.max(0, (median - low) / (high - low))) : null;
+  const mx = medianPos === null ? null : 40 + medianPos * 520;
   return (
     <svg viewBox="0 0 600 90" className="h-auto w-full" role="img" aria-label={`Range of value ${low} to ${high} times ${basis}; current position ${current ?? 'unknown'}`}>
       <defs>
@@ -35,10 +41,19 @@ export function RangeBar({
       <text x="40" y="74" fontSize="12" fill="#4a5a6a" textAnchor="start">
         Low {formatMultiple(low)}
       </text>
-      {/* Best in class */}
+      {/* Sector median */}
+      {mx !== null ? (
+        <>
+          <line x1={mx} y1="30" x2={mx} y2="60" stroke="#4a5a6a" strokeWidth="2" strokeDasharray="3 3" />
+          <text x={mx} y="18" fontSize="11" fill="#4a5a6a" textAnchor="middle">
+            Median {formatMultiple(median)}
+          </text>
+        </>
+      ) : null}
+      {/* Top of range */}
       <line x1="560" y1="26" x2="560" y2="64" stroke="#2f6b4f" strokeWidth="2" />
       <text x="560" y="18" fontSize="12" fontWeight="700" fill="#2f6b4f" textAnchor="end">
-        Best-in-class {formatMultiple(high)}
+        {topLabel} {formatMultiple(high)}
       </text>
       {/* Current */}
       <line x1={x} y1="26" x2={x} y2="64" stroke="#da5b36" strokeWidth="3" />

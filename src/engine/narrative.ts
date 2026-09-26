@@ -1,5 +1,6 @@
 import type { AssessmentResult } from './buildResult';
 import { roundDisplayValue } from './rounding';
+import { rangeKindCaveat, topOfRangeNoun } from './labels';
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const money = (v: number) => usd.format(roundDisplayValue(v));
@@ -21,7 +22,9 @@ export function buildNarrative(result: AssessmentResult, companyName: string): N
   const p = result.personal;
   const vg = result.valueGap;
   const bandLabel = b.band?.label ?? 'unbanded';
-  const basis = vg.earningsBasis;
+  const basis = vg.effectiveBasis;
+  const topNoun = topOfRangeNoun(vg.source.rangeKind);
+  const kindCaveat = rangeKindCaveat(vg.source.rangeKind);
 
   const headline = `${companyName} scored ${pct(b.readinessPct)} on Business Readiness (${bandLabel}).`;
   const paragraphs: string[] = [];
@@ -33,11 +36,17 @@ export function buildNarrative(result: AssessmentResult, companyName: string): N
         : 'Personal Readiness has not been scored yet.'),
   );
 
-  if (vg.status === 'ok' && vg.earnings !== null && vg.currentValue !== null && vg.bestInClassValue !== null && vg.valueGap !== null) {
+  if (vg.status === 'ok' && vg.effectiveEarnings !== null && vg.currentValue !== null && vg.bestInClassValue !== null && vg.valueGap !== null) {
     paragraphs.push(
-      `At normalized ${basis} of ${money(vg.earnings)}, the current readiness score corresponds to an estimated multiple of ${vg.currentMultiple?.toFixed(2)}× inside the sector's ${vg.lowMultiple}×–${vg.highMultiple}× range. That puts the estimated value at roughly ${money(vg.currentValue)}. ` +
-        `A best-in-class company in the same sector at the same ${basis} would sit at the top of the range, roughly ${money(vg.bestInClassValue)}. ` +
-        `The estimated gap is ${money(vg.valueGap)}.`,
+      (vg.earningsDerivation ? `${vg.earningsDerivation}. ` : '') +
+        `At normalized ${basis} of ${money(vg.effectiveEarnings)}, the current readiness score corresponds to an estimated multiple of ${vg.currentMultiple?.toFixed(2)}× inside the sector's ${vg.lowMultiple}×–${vg.highMultiple}× ${basis} range. That puts the estimated value at roughly ${money(vg.currentValue)}. ` +
+        `${topNoun.charAt(0).toUpperCase()}${topNoun.slice(1)} at the same ${basis} would be worth roughly ${money(vg.bestInClassValue)}. ` +
+        `The estimated gap is ${money(vg.valueGap)}.` +
+        (kindCaveat ? ` ${kindCaveat}` : ''),
+    );
+  } else if (vg.status === 'basis_mismatch') {
+    paragraphs.push(
+      `The sector range is ${vg.lowMultiple}×–${vg.highMultiple}× on an ${vg.effectiveBasis} basis, but earnings were entered as ${vg.earningsBasis}. A dollar estimate is not shown until earnings are entered in ${vg.effectiveBasis} or an owner compensation add-back is provided to bridge the two.`,
     );
   } else if (vg.status === 'no_earnings') {
     paragraphs.push(

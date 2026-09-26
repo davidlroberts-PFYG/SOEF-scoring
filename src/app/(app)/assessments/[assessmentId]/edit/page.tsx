@@ -25,10 +25,12 @@ export default async function EditAssessmentPage({ params }: { params: Promise<{
     revenueTtm: num(assessment.revenueTtm),
     earnings: num(assessment.earnings),
     earningsBasis: assessment.earningsBasis,
+    ownerCompAddback: num(assessment.ownerCompAddback),
     ownerValueEstimate: num(assessment.ownerValueEstimate),
     useOverride: assessment.overrideLowMultiple !== null && assessment.overrideHighMultiple !== null,
     overrideLowMultiple: num(assessment.overrideLowMultiple),
     overrideHighMultiple: num(assessment.overrideHighMultiple),
+    overrideBasis: assessment.overrideBasis ?? '',
     overrideNote: assessment.overrideNote ?? '',
   };
 

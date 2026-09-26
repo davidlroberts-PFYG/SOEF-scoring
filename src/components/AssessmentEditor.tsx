@@ -14,6 +14,7 @@ import {
   type SectorInput,
 } from '@/engine';
 import { formatCurrency, formatMultiple, formatPct } from '@/lib/format';
+import { topOfRangeLabel } from '@/engine/labels';
 import { RatingControl } from './RatingControl';
 import { BandPill } from './Pill';
 
@@ -25,10 +26,12 @@ export interface FinancialsState {
   revenueTtm: string;
   earnings: string;
   earningsBasis: 'EBITDA' | 'SDE';
+  ownerCompAddback: string;
   ownerValueEstimate: string;
   useOverride: boolean;
   overrideLowMultiple: string;
   overrideHighMultiple: string;
+  overrideBasis: 'EBITDA' | 'SDE' | '';
   overrideNote: string;
 }
 
@@ -60,9 +63,11 @@ function toAssessmentInput(f: FinancialsState): AssessmentInput {
     revenueTtm: toNum(f.revenueTtm),
     earnings: toNum(f.earnings),
     earningsBasis: f.earningsBasis,
+    ownerCompAddback: toNum(f.ownerCompAddback),
     ownerValueEstimate: toNum(f.ownerValueEstimate),
     overrideLowMultiple: f.useOverride ? toNum(f.overrideLowMultiple) : null,
     overrideHighMultiple: f.useOverride ? toNum(f.overrideHighMultiple) : null,
+    overrideBasis: f.useOverride && f.overrideBasis ? f.overrideBasis : null,
     overrideNote: f.useOverride ? f.overrideNote || null : null,
   };
 }
@@ -148,10 +153,12 @@ export function AssessmentEditor(props: Props) {
         revenueTtm: fin.revenueTtm || null,
         earnings: fin.earnings || null,
         earningsBasis: fin.earningsBasis,
+        ownerCompAddback: fin.ownerCompAddback || null,
         ownerValueEstimate: fin.ownerValueEstimate || null,
         useOverride: fin.useOverride,
         overrideLowMultiple: fin.overrideLowMultiple || null,
         overrideHighMultiple: fin.overrideHighMultiple || null,
+        overrideBasis: fin.overrideBasis || null,
         overrideNote: fin.overrideNote || null,
       };
       track(saveFinancialsAction(assessmentId, payload));
@@ -319,6 +326,8 @@ function FinancialsTab({
 }) {
   const vg = result.valueGap;
   const sectorHasMultiples = sector?.lowMultiple !== null && sector?.lowMultiple !== undefined && sector?.highMultiple !== null;
+  const multipleBasis = vg.source.basis;
+  const basesDiffer = multipleBasis !== fin.earningsBasis;
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="card space-y-4">
@@ -360,7 +369,22 @@ function FinancialsTab({
               Normalized {fin.earningsBasis}
             </label>
             <input id="earnings" inputMode="decimal" className="input" disabled={readOnly} placeholder="$" value={fin.earnings} onChange={(e) => updateFin('earnings', e.target.value)} />
-            <p className="mt-1 text-xs text-ink-soft">Must be positive to produce a dollar estimate.</p>
+            <p className="mt-1 text-xs text-ink-soft">
+              Must be positive to produce a dollar estimate.
+              {basesDiffer ? (
+                <span className="ml-1 font-semibold text-warn">The multiples in use are {multipleBasis}; enter {multipleBasis} or an add-back below.</span>
+              ) : null}
+            </p>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="ownerCompAddback">
+              Owner compensation add-back (SDE − EBITDA)
+              {basesDiffer ? <span className="ml-1 text-warn">required to bridge {fin.earningsBasis} → {multipleBasis}</span> : <span className="ml-1 normal-case text-ink-soft">(optional)</span>}
+            </label>
+            <input id="ownerCompAddback" inputMode="decimal" className="input" disabled={readOnly} placeholder="$ owner salary, benefits, perks added back" value={fin.ownerCompAddback} onChange={(e) => updateFin('ownerCompAddback', e.target.value)} />
+            <p className="mt-1 text-xs text-ink-soft">
+              SDE = EBITDA + one owner&apos;s market-rate compensation and discretionary expenses. Main Street multiples (BizBuySell) are SDE; lower-middle-market multiples are usually EBITDA.
+            </p>
           </div>
           <div>
             <label className="label" htmlFor="ownerValueEstimate">
@@ -375,7 +399,10 @@ function FinancialsTab({
           {sector ? (
             sectorHasMultiples ? (
               <p>
-                Sector table: <strong>{sector.name}</strong> {formatMultiple(sector.lowMultiple)}–{formatMultiple(sector.highMultiple)} ({sector.basis})
+                Sector table: <strong>{sector.name}</strong> {formatMultiple(sector.lowMultiple)}–{formatMultiple(sector.highMultiple)} <strong>{sector.basis}</strong>
+                {sector.medianMultiple ? ` · median ${formatMultiple(sector.medianMultiple)}` : ''}
+                {' · top of range = '}
+                {topOfRangeLabel(sector.rangeKind ?? 'median_range').toLowerCase()}
                 <br />
                 <span className="text-xs text-ink-soft">
                   Source: {sector.sourceNote ?? '—'} · Last reviewed: {sector.lastReviewed ?? '—'}
@@ -408,6 +435,16 @@ function FinancialsTab({
               </label>
               <input id="overrideHigh" inputMode="decimal" className="input" disabled={readOnly} placeholder="e.g. 6.0" value={fin.overrideHighMultiple} onChange={(e) => updateFin('overrideHighMultiple', e.target.value)} />
             </div>
+            <div>
+              <label className="label" htmlFor="overrideBasis">
+                Override basis
+              </label>
+              <select id="overrideBasis" className="input" disabled={readOnly} value={fin.overrideBasis} onChange={(e) => updateFin('overrideBasis', e.target.value as 'EBITDA' | 'SDE' | '')}>
+                <option value="">Same as earnings basis ({fin.earningsBasis})</option>
+                <option value="EBITDA">EBITDA</option>
+                <option value="SDE">SDE</option>
+              </select>
+            </div>
             <div className="sm:col-span-2">
               <label className="label" htmlFor="overrideNote">
                 Why this range? (required)
@@ -423,13 +460,16 @@ function FinancialsTab({
         <p className="text-xs text-ink-soft">Uses Business Readiness only. Estimates, not an appraisal.</p>
         {vg.status === 'ok' ? (
           <dl className="grid grid-cols-2 gap-y-2 text-sm">
-            <dt className="text-ink-soft">Current multiple</dt>
+            {vg.earningsDerivation ? (
+              <dd className="col-span-2 rounded bg-canvas px-2 py-1 text-xs text-ink-soft">{vg.earningsDerivation}</dd>
+            ) : null}
+            <dt className="text-ink-soft">Current multiple ({vg.effectiveBasis})</dt>
             <dd className="text-right font-semibold">{formatMultiple(vg.currentMultiple)}</dd>
-            <dt className="text-ink-soft">Best-in-class multiple</dt>
+            <dt className="text-ink-soft">{topOfRangeLabel(vg.source.rangeKind)} multiple</dt>
             <dd className="text-right font-semibold">{formatMultiple(vg.bestInClassMultiple)}</dd>
             <dt className="text-ink-soft">Current estimated value</dt>
             <dd className="text-right font-semibold">{formatCurrency(vg.currentValue)}</dd>
-            <dt className="text-ink-soft">Best-in-class value</dt>
+            <dt className="text-ink-soft">{topOfRangeLabel(vg.source.rangeKind)} value</dt>
             <dd className="text-right font-semibold">{formatCurrency(vg.bestInClassValue)}</dd>
             <dt className="text-navy font-semibold">Estimated value gap</dt>
             <dd className="text-right text-lg font-bold text-orange">{formatCurrency(vg.valueGap)}</dd>

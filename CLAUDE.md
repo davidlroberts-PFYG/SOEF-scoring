@@ -70,11 +70,13 @@ share_i          = points_lost_i / Σ points_lost
 gap_attributed_i = value_gap × share_i        # allocation, not a prediction
 ```
 - Personal readiness never enters the formula; it is displayed beside the gap.
-- Multiples come from `sectors` unless the assessment has an override (`override_low_multiple`, `override_high_multiple`, required `override_note`). The override wins.
-- Guards: earnings ≤ 0 → status `no_earnings`, show scores and multiple range but **no dollar values**, message "Valuation requires positive normalized earnings." Sector without multiples → status `no_multiples`, block the valuation panel and prompt for an override. Inverted/non-positive multiples → `invalid_multiples`.
+- Multiples come from `sectors` unless the assessment has an override (`override_low_multiple`, `override_high_multiple`, optional `override_basis`, required `override_note`). The override wins.
+- **Earnings basis must match the multiples' basis.** The seeded sector ranges are BizBuySell sub-industry **SDE** multiples, not EBITDA. `computeValueGap` compares `assessment.earnings_basis` to `source.basis`; when they differ it bridges with `owner_comp_addback` (SDE = EBITDA + add-back, EBITDA = SDE − add-back) and reports the derivation, or blocks with status `basis_mismatch` and no dollar values. Never apply SDE multiples to EBITDA silently: it understates value. New assessments default their basis to the client's sector basis.
+- **Range kind.** `sectors.range_kind` is `median_range` (the seed: low/high are the min and max of sub-industry medians) or `quartile_range` (top-quartile figures from a transaction database). `topOfRangeLabel()` in `src/engine/labels.ts` renders "Top of sector range" vs "Best-in-class" everywhere (UI, PDF, narrative). Do not hard-code "best-in-class" in copy; use the label helper. Overrides are treated as `quartile_range`.
+- Guards: earnings ≤ 0 → status `no_earnings`, show scores and multiple range but **no dollar values**, message "Valuation requires positive normalized earnings." Sector without multiples → status `no_multiples`, block the valuation panel, prompt for an override, and show the IBBA size-tier reference table. Inverted/non-positive multiples → `invalid_multiples`. Basis mismatch without an add-back → `basis_mismatch`.
 - Display rounding (`roundDisplayValue`): nearest $1,000 below $1M, nearest $10,000 at or above. Engine keeps unrounded numbers so attributions sum to the gap.
-- Acceptance: low 3.0×, high 6.0×, EBITDA $500,000, business pct 50% → 4.5×, $2,250,000, $3,000,000, gap $750,000 (unit test).
-- **Seed sectors have blank multiples on purpose** with a "SOURCE NEEDED" note. Never invent authoritative multiples. The advisor populates them from a licensed data source; `source_note` and `last_reviewed` are displayed beside every valuation figure and on the PDF.
+- Acceptance: low 3.0×, high 6.0×, EBITDA $500,000, business pct 50% → 4.5×, $2,250,000, $3,000,000, gap $750,000 (unit test). Manufacturing 2.59×–4.24× SDE, SDE $300,000, 50% → 3.415×, $1,024,500, $1,272,000, gap $247,500 (unit test). EBITDA $400,000 + $150,000 add-back against SDE multiples → effective SDE $550,000 with the derivation shown (unit test).
+- **Sector seed data** lives in `content/seed/sectors.json`, generated from `content/benchmarks/sector_benchmarks_seed.csv` (BizBuySell Industry Valuation Multiples, closed sales Q3 2021–Q2 2026, SDE basis; method and exclusions in `content/benchmarks/README.md`). Government Contracting is intentionally blank ("SOURCE NEEDED"): no Main Street source exists. Never invent authoritative multiples. The seed **fills blank rows only** (both multiples null); rows the advisor has edited in Settings are never overwritten. `source_note`, `source_url`, and `last_reviewed` are displayed beside every valuation figure and on the PDF. Reuse terms for BizBuySell and IBBA data are not yet verified.
 - On release, the full `AssessmentResult` is frozen into `assessments.snapshot_json` so a released report never changes when benchmarks or weights are edited later. Reopening discards the snapshot.
 
 ## Compliance, disclosures, IP (spec Section 8) — do not skip
@@ -98,6 +100,7 @@ gap_attributed_i = value_gap × share_i        # allocation, not a prediction
 
 1. Transaction-multiple data source and whether its license permits client-facing display.
 2. EPI permission or rewording of factor text.
-3. EBITDA vs SDE default (Settings → Defaults has the switch and an informational SDE revenue threshold).
+3. EBITDA vs SDE default: new installs default to SDE and new assessments follow the sector basis; the switch is in Settings → Defaults.
+6. Reuse terms for BizBuySell (CoStar) and IBBA data in a client-facing tool, and a licensed source (DealStats, PeerComps, GF Data) for top-quartile multiples and for Government Contracting.
 4. Whether Personal Readiness should gate anything (currently display-only).
 5. `am-i-bankable` uses no ORM (Upstash Redis) and no PDF library (print CSS), so this repo chose Drizzle + @react-pdf/renderer.

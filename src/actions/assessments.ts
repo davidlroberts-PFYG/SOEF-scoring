@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { getDb } from '@/db/client';
-import { assessments, owners, ratings } from '@/db/schema';
+import { assessments, owners, ratings, sectors } from '@/db/schema';
 import { isValidRating } from '@/engine';
 import { requireSession } from '@/lib/auth';
 import { getAssessmentBundle, listAssessmentsForOwner } from '@/lib/data';
@@ -33,18 +33,23 @@ export async function createAssessmentAction(ownerId: string, copyFromLatest: bo
   if (!owner) redirect('/clients');
   const defaults = await getDefaults();
   const previous = copyFromLatest ? (await listAssessmentsForOwner(ownerId))[0] : undefined;
+  // New assessments default to the basis the client's sector multiples are expressed in.
+  const sector = owner.sectorId ? await db.query.sectors.findFirst({ where: eq(sectors.id, owner.sectorId) }) : null;
+  const defaultBasis = previous?.earningsBasis ?? sector?.basis ?? defaults.earningsBasis;
 
   const [created] = await db
     .insert(assessments)
     .values({
       ownerId,
       advisorId: session.advisorId,
-      earningsBasis: previous?.earningsBasis ?? defaults.earningsBasis,
+      earningsBasis: defaultBasis,
       revenueTtm: previous?.revenueTtm ?? null,
       earnings: previous?.earnings ?? null,
+      ownerCompAddback: previous?.ownerCompAddback ?? null,
       ownerValueEstimate: previous?.ownerValueEstimate ?? null,
       overrideLowMultiple: previous?.overrideLowMultiple ?? null,
       overrideHighMultiple: previous?.overrideHighMultiple ?? null,
+      overrideBasis: previous?.overrideBasis ?? null,
       overrideNote: previous?.overrideNote ?? null,
     })
     .returning({ id: assessments.id });
@@ -116,13 +121,18 @@ const financialsSchema = z
     revenueTtm: moneyField,
     earnings: moneyField,
     earningsBasis: z.enum(['EBITDA', 'SDE']),
+    ownerCompAddback: moneyField,
     ownerValueEstimate: moneyField,
     useOverride: z.boolean(),
     overrideLowMultiple: moneyField,
     overrideHighMultiple: moneyField,
+    overrideBasis: z.enum(['EBITDA', 'SDE']).nullable(),
     overrideNote: z.string().trim().max(2000).nullable(),
   })
   .superRefine((v, ctx) => {
+    if (v.ownerCompAddback !== null && v.ownerCompAddback < 0) {
+      ctx.addIssue({ code: 'custom', message: 'Owner compensation add-back must be zero or positive.' });
+    }
     if (v.useOverride) {
       if (v.overrideLowMultiple === null || v.overrideHighMultiple === null) {
         ctx.addIssue({ code: 'custom', message: 'Override requires both a low and a high multiple.' });
@@ -157,9 +167,11 @@ export async function saveFinancialsAction(assessmentId: string, input: Financia
       revenueTtm: numStr(d.revenueTtm),
       earnings: numStr(d.earnings),
       earningsBasis: d.earningsBasis,
+      ownerCompAddback: numStr(d.ownerCompAddback),
       ownerValueEstimate: numStr(d.ownerValueEstimate),
       overrideLowMultiple: d.useOverride ? numStr(d.overrideLowMultiple) : null,
       overrideHighMultiple: d.useOverride ? numStr(d.overrideHighMultiple) : null,
+      overrideBasis: d.useOverride ? d.overrideBasis : null,
       overrideNote: d.useOverride ? d.overrideNote : null,
       updatedAt: now,
     })

@@ -1,0 +1,140 @@
+{
+  "_note": "Derived from ibba_market_pulse_size_tiers.csv. All-industry medians by deal size; shown as read-only reference on the override panel. Not sector-specific.",
+  "tiers": [
+    {
+      "quarter": "Q2 2026",
+      "dealSizeTier": "<$500K",
+      "basis": "SDE",
+      "medianMultiple": 2.0,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/08/mp-highlights-q2-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q2 2026",
+      "dealSizeTier": "$500K\u2013$1M",
+      "basis": "SDE",
+      "medianMultiple": 2.3,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/08/mp-highlights-q2-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q2 2026",
+      "dealSizeTier": "$1M\u2013$2M",
+      "basis": "SDE",
+      "medianMultiple": 2.8,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/08/mp-highlights-q2-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q2 2026",
+      "dealSizeTier": "$2M\u2013$5M",
+      "basis": "EBITDA",
+      "medianMultiple": 3.9,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/08/mp-highlights-q2-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q2 2026",
+      "dealSizeTier": "$5M\u2013$50M",
+      "basis": "EBITDA",
+      "medianMultiple": 5.8,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/08/mp-highlights-q2-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q1 2026",
+      "dealSizeTier": "<$500K",
+      "basis": "SDE",
+      "medianMultiple": 2.0,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/05/mp-highlights-q1-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q1 2026",
+      "dealSizeTier": "$500K\u2013$1M",
+      "basis": "SDE",
+      "medianMultiple": 2.5,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/05/mp-highlights-q1-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q1 2026",
+      "dealSizeTier": "$1M\u2013$2M",
+      "basis": "SDE",
+      "medianMultiple": 3.0,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/05/mp-highlights-q1-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q1 2026",
+      "dealSizeTier": "$2M\u2013$5M",
+      "basis": "EBITDA",
+      "medianMultiple": 4.0,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/05/mp-highlights-q1-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q1 2026",
+      "dealSizeTier": "$5M\u2013$50M",
+      "basis": "EBITDA",
+      "medianMultiple": 4.5,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/05/mp-highlights-q1-2026.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q4 2025",
+      "dealSizeTier": "<$500K",
+      "basis": "SDE",
+      "medianMultiple": 2.0,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/02/market-pulse-highlights-q4-2025.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q4 2025",
+      "dealSizeTier": "$500K\u2013$1M",
+      "basis": "SDE",
+      "medianMultiple": 2.8,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/02/market-pulse-highlights-q4-2025.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q4 2025",
+      "dealSizeTier": "$1M\u2013$2M",
+      "basis": "SDE",
+      "medianMultiple": 3.1,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/02/market-pulse-highlights-q4-2025.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q4 2025",
+      "dealSizeTier": "$2M\u2013$5M",
+      "basis": "EBITDA",
+      "medianMultiple": 4.1,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/02/market-pulse-highlights-q4-2025.pdf",
+      "lastReviewed": "2026-09-26"
+    },
+    {
+      "quarter": "Q4 2025",
+      "dealSizeTier": "$5M\u2013$50M",
+      "basis": "EBITDA",
+      "medianMultiple": 5.5,
+      "source": "IBBA / M&A Source Market Pulse highlights (all industries, survey of ~300 brokers/advisors)",
+      "sourceUrl": "https://www.ibba.org/wp-content/uploads/2026/02/market-pulse-highlights-q4-2025.pdf",
+      "lastReviewed": "2026-09-26"
+    }
+  ]
+}

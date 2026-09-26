@@ -29,6 +29,8 @@ import {
 export const scorecardKeyEnum = pgEnum('scorecard_key', ['business', 'personal']);
 export const earningsBasisEnum = pgEnum('earnings_basis', ['EBITDA', 'SDE']);
 export const assessmentStatusEnum = pgEnum('assessment_status', ['draft', 'released']);
+/** Whether a sector's high multiple is a top-quartile figure or merely the top of a range of medians. */
+export const rangeKindEnum = pgEnum('range_kind', ['median_range', 'quartile_range']);
 
 export const advisors = pgTable('advisors', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -44,7 +46,13 @@ export const sectors = pgTable('sectors', {
   lowMultiple: numeric('low_multiple', { precision: 8, scale: 3 }),
   highMultiple: numeric('high_multiple', { precision: 8, scale: 3 }),
   basis: earningsBasisEnum('basis').notNull().default('EBITDA'),
+  /** Sector-wide median, shown as a reference marker between low and high. */
+  medianMultiple: numeric('median_multiple', { precision: 8, scale: 3 }),
+  rangeKind: rangeKindEnum('range_kind').notNull().default('median_range'),
   sourceNote: text('source_note'),
+  sourceUrl: text('source_url'),
+  /** How low/high were derived: constituent sub-industries, exclusions. */
+  methodNote: text('method_note'),
   lastReviewed: date('last_reviewed'),
   sortOrder: integer('sort_order').notNull().default(0),
   active: boolean('active').notNull().default(true),
@@ -122,9 +130,13 @@ export const assessments = pgTable(
     revenueTtm: numeric('revenue_ttm', { precision: 16, scale: 2 }),
     earnings: numeric('earnings', { precision: 16, scale: 2 }),
     earningsBasis: earningsBasisEnum('earnings_basis').notNull().default('EBITDA'),
+    /** Owner compensation add-back: SDE − EBITDA. Bridges an EBITDA entry to SDE multiples (or the reverse). */
+    ownerCompAddback: numeric('owner_comp_addback', { precision: 16, scale: 2 }),
     ownerValueEstimate: numeric('owner_value_estimate', { precision: 16, scale: 2 }),
     overrideLowMultiple: numeric('override_low_multiple', { precision: 8, scale: 3 }),
     overrideHighMultiple: numeric('override_high_multiple', { precision: 8, scale: 3 }),
+    /** Basis of the override multiples; null means "same as the assessment's earnings basis". */
+    overrideBasis: earningsBasisEnum('override_basis'),
     overrideNote: text('override_note'),
     /** Frozen engine result written at release time. */
     snapshotJson: jsonb('snapshot_json'),

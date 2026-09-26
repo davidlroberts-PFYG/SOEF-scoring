@@ -76,7 +76,8 @@ describe('PDF report', () => {
     }
     const all = pages.join(' ');
     expect(all).toContain('Acme Fabrication');
-    expect(all).toContain('Best-in-class minus current');
+    expect(all).toContain('Top of sector range minus current');
+    expect(all).toContain('sub-industry medians');
     expect(all).toContain('Biggest levers');
     expect(all).toContain('Advisor experience (test)');
     expect(all).not.toMatch(/fee[\s-]*only/i);
